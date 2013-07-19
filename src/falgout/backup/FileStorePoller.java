@@ -88,34 +88,38 @@ public class FileStorePoller implements Closeable {
 			executor.scheduleWithFixedDelay(new Runnable() {
 				@Override
 				public void run() {
-					List<FileStore> updatedFileStores = getFileStores();
-					
-					List<FileStore> newFileStores = new ArrayList<>();
-					for (FileStore u : updatedFileStores) {
-						if (!currentFileStores.contains(u)) {
-							newFileStores.add(u);
-						}
-					}
-					
-					List<FileStore> removedFileStores = new ArrayList<>();
-					for (FileStore o : currentFileStores) {
-						if (!updatedFileStores.contains(o)) {
-							removedFileStores.add(o);
-						}
-					}
-					
-					currentFileStores = updatedFileStores;
-					
-					for (FileStoreListener l : listeners) {
-						for (FileStore n : newFileStores) {
-							l.fileStoreAdded(n);
+					try {
+						List<FileStore> updatedFileStores = getFileStores();
+						
+						List<FileStore> newFileStores = new ArrayList<>();
+						for (FileStore u : updatedFileStores) {
+							if (!currentFileStores.contains(u)) {
+								newFileStores.add(u);
+							}
 						}
 						
-						for (FileStore r : removedFileStores) {
-							l.fileStoreRemoved(r);
+						List<FileStore> removedFileStores = new ArrayList<>();
+						for (FileStore o : currentFileStores) {
+							if (!updatedFileStores.contains(o)) {
+								removedFileStores.add(o);
+							}
 						}
+						
+						currentFileStores = updatedFileStores;
+						
+						for (FileStoreListener l : listeners) {
+							for (FileStore n : newFileStores) {
+								l.fileStoreAdded(n);
+							}
+							
+							for (FileStore r : removedFileStores) {
+								l.fileStoreRemoved(r);
+							}
+						}
+					} catch (Throwable t) {
+						t.printStackTrace();
+						close();
 					}
-					
 				}
 			}, delay, delay, unit);
 		}
