@@ -20,8 +20,7 @@ enum DefaultFileStoreLocator implements FileStoreLocator {
 				List<String> lines = Files.readAllLines(mounts, Charset.defaultCharset());
 				
 				// /proc/mounts is listed in mount order. Only the most recent
-				// mount
-				// at a location will be visible.
+				// mount at a location will be visible.
 				Collections.reverse(lines);
 				
 				for (String line : lines) {

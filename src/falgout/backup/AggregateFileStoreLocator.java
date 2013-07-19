@@ -12,6 +12,8 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import falgout.utils.OperatingSystem;
+
 public class AggregateFileStoreLocator implements FileStoreLocator {
 	private final Set<FileStoreLocator> locators = new CopyOnWriteArraySet<>();
 	
@@ -19,7 +21,7 @@ public class AggregateFileStoreLocator implements FileStoreLocator {
 	}
 	
 	public AggregateFileStoreLocator(FileStoreLocator... locators) {
-		this.locators.addAll(Arrays.asList(locators));
+		this(Arrays.asList(locators));
 	}
 	
 	public AggregateFileStoreLocator(Collection<? extends FileStoreLocator> locators) {
@@ -45,7 +47,16 @@ public class AggregateFileStoreLocator implements FileStoreLocator {
 		return null;
 	}
 	
-	private static final AggregateFileStoreLocator DEFAULT = new AggregateFileStoreLocator(LINUX, MAC_OS, WINDOWS);
+	private static final AggregateFileStoreLocator DEFAULT = new AggregateFileStoreLocator();
+	static {
+		if (OperatingSystem.isWindows()) {
+			DEFAULT.addFileStoreLocator(WINDOWS);
+		} else if (OperatingSystem.isMac()) {
+			DEFAULT.addFileStoreLocator(MAC_OS);
+		} else {
+			DEFAULT.addFileStoreLocator(LINUX);
+		}
+	}
 	
 	public static AggregateFileStoreLocator getDefault() {
 		return DEFAULT;
