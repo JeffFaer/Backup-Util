@@ -44,8 +44,12 @@ public class FileStorePollerTest {
 	
 	@Test(expected = IllegalStateException.class)
 	public void FailsIfStartedTwice() {
-		poller.start();
-		poller.start();
+		try {
+			poller.start();
+			poller.start();
+		} finally {
+			poller.close();
+		}
 	}
 	
 	@Test
@@ -97,5 +101,21 @@ public class FileStorePollerTest {
 		assertTrue(poller.isRunning());
 		poller.close();
 		assertFalse(poller.isRunning());
+	}
+	
+	@Test
+	public void CanRestartPoller() {
+		poller.start();
+		poller.close();
+		poller.start();
+		poller.close();
+	}
+	
+	@Test
+	public void RestartedPollerWorksCorrectly() throws InterruptedException {
+		poller.start();
+		poller.close();
+		DetectsWhenFileStoreIsAdded();
+		DetectsWhenFileStoreIsRemoved();
 	}
 }

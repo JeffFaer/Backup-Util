@@ -19,9 +19,8 @@ import falgout.utils.CloseableLock;
 /**
  * A {@code FileStorePoller} detects when a {@link FileStore} is added or
  * removed from a {@link FileSystem}. Once a {@code FileStorePoller} has been
- * {@link #start() started}, attempting to {@code start} it again will result in
- * an exception. After {@link #close() closing} a {@code FileStorePoller}, it
- * cannot be restarted. <br/>
+ * {@link #start() started}, attempting to {@code start} it again without first
+ * {@link #close() closing} it will result in an exception.<br/>
  * <br/>
  * This class is implemented via polling. Specifying a {@code delay} and
  * {@code TimeUnit} in the {@link #FileStorePoller(FileSystem, long, TimeUnit)
@@ -36,7 +35,6 @@ public class FileStorePoller implements Closeable {
 	
 	private final Lock lock = new ReentrantLock();
 	private volatile ScheduledExecutorService executor;
-	private volatile List<FileStore> currentFileStores;
 	private final Set<FileStoreListener> listeners = new CopyOnWriteArraySet<>();
 	
 	public FileStorePoller() {
@@ -66,7 +64,9 @@ public class FileStorePoller implements Closeable {
 	}
 	
 	public boolean isRunning() {
-		return executor != null && !executor.isShutdown();
+		try (CloseableLock l = CloseableLock.lock(lock)) {
+			return executor != null;
+		}
 	}
 	
 	/**
@@ -83,11 +83,16 @@ public class FileStorePoller implements Closeable {
 			}
 			
 			executor = Executors.newSingleThreadScheduledExecutor();
-			currentFileStores = getFileStores();
-			
 			executor.scheduleWithFixedDelay(new Runnable() {
+				private List<FileStore> currentFileStores;
+				
 				@Override
 				public void run() {
+					if (currentFileStores == null) {
+						currentFileStores = getFileStores();
+						return;
+					}
+					
 					try {
 						List<FileStore> updatedFileStores = getFileStores();
 						
@@ -121,7 +126,7 @@ public class FileStorePoller implements Closeable {
 						close();
 					}
 				}
-			}, delay, delay, unit);
+			}, 0, delay, unit);
 		}
 	}
 	
@@ -157,9 +162,12 @@ public class FileStorePoller implements Closeable {
 	 */
 	@Override
 	public void close() {
-		if (executor == null) {
-			throw new IllegalStateException("Never started.");
+		try (CloseableLock l = CloseableLock.lock(lock)) {
+			if (executor == null) {
+				throw new IllegalStateException("Not started.");
+			}
+			executor.shutdownNow();
+			executor = null;
 		}
-		executor.shutdownNow();
 	}
 }
