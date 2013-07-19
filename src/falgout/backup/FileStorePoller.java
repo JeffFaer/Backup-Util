@@ -65,6 +65,10 @@ public class FileStorePoller implements Closeable {
 		return unit;
 	}
 	
+	public boolean isRunning() {
+		return executor != null && !executor.isShutdown();
+	}
+	
 	/**
 	 * Starts this {@code FileStorePoller} as a recurring task that repeats as
 	 * specified when it was created.

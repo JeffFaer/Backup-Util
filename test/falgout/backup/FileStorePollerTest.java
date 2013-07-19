@@ -1,5 +1,7 @@
 package falgout.backup;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -86,5 +88,14 @@ public class FileStorePollerTest {
 				return null;
 			}
 		};
+	}
+	
+	@Test
+	public void CanDetectIfPollerIsRunning() {
+		assertFalse(poller.isRunning());
+		poller.start();
+		assertTrue(poller.isRunning());
+		poller.close();
+		assertFalse(poller.isRunning());
 	}
 }
