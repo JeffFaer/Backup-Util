@@ -22,7 +22,14 @@ public class BackupConfigurationTest {
 	private static final Path relSrc = Paths.get("src");
 	private static final Path relSrcFalgout = relSrc.resolve("falgout");
 	private static final Path bin = Paths.get("bin");
-	private static final Path cd = Paths.get("/home/jeffrey/git/Backup-Util");
+	private static final Path cd;
+	static {
+		try {
+			cd = Paths.get(".").toRealPath();
+		} catch (IOException e) {
+			throw new Error(e);
+		}
+	}
 	
 	@Mock private FileStore store;
 	@Mock private FileStoreLocator locator;
