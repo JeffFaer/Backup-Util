@@ -19,35 +19,50 @@ import falgout.backup.FileStoreLocator;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BackupConfigurationTest {
-	private static final Path src = Paths.get("src");
+	private static final Path relSrc = Paths.get("src");
+	private static final Path relSrcFalgout = relSrc.resolve("falgout");
 	private static final Path bin = Paths.get("bin");
-	private static final Path cd = Paths.get(".");
-	private static final Path srcFalgout = src.resolve("falgout");
+	private static final Path cd = Paths.get("/home/jeffrey/git/Backup-Util");
 	
 	@Mock private FileStore store;
 	@Mock private FileStoreLocator locator;
 	private BackupConfiguration conf;
+	private Path src;
+	private Path srcFalgout;
 	
 	@Before
 	public void init() throws IOException {
 		when(locator.getRootLocation(store)).thenReturn(cd);
 		conf = BackupConfiguration.load(store, locator);
+		
+		src = relSrc;
+		srcFalgout = relSrcFalgout;
 	}
 	
 	@Test
 	public void AddingDirectoriesKeepsHighestLevel() throws IOException {
 		conf.addDirectory(src);
-		assertEquals(Collections.singleton(src), conf.getDirectoriesToBackup());
+		assertEquals(Collections.singleton(relSrc), conf.getDirectoriesToBackup());
 		conf.addDirectory(srcFalgout);
-		assertEquals(Collections.singleton(src), conf.getDirectoriesToBackup());
+		assertEquals(Collections.singleton(relSrc), conf.getDirectoriesToBackup());
 	}
 	
 	@Test
 	public void AddingDirectoriesRemovedLowerLevel() throws IOException {
 		conf.addDirectory(srcFalgout);
-		assertEquals(Collections.singleton(srcFalgout), conf.getDirectoriesToBackup());
+		assertEquals(Collections.singleton(relSrcFalgout), conf.getDirectoriesToBackup());
 		conf.addDirectory(src);
-		assertEquals(Collections.singleton(src), conf.getDirectoriesToBackup());
+		assertEquals(Collections.singleton(relSrc), conf.getDirectoriesToBackup());
+	}
+	
+	@Test
+	public void AddingAbsoluteDirectoriesWorks() throws IOException {
+		src = src.toRealPath();
+		srcFalgout = srcFalgout.toRealPath();
+		
+		AddingDirectoriesKeepsHighestLevel();
+		conf.removeDirectory(relSrc);
+		AddingDirectoriesRemovedLowerLevel();
 	}
 	
 	@Test(expected = IOException.class)
