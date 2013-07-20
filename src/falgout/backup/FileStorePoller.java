@@ -155,6 +155,20 @@ public class FileStorePoller implements Closeable {
 	}
 	
 	/**
+	 * Blocks until {@link #close} is called, the timeout elapses, or the
+	 * current thread is interrupted.
+	 * 
+	 * @param timeout maximum time to wait
+	 * @param unit unit of {@code timeout}
+	 * @return {@code true} if the {@code FileStorePoller} terminated,
+	 *         {@code false} if the timeout elapsed.
+	 * @throws InterruptedException if interrupted while waiting
+	 */
+	public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+		return executor.awaitTermination(timeout, unit);
+	}
+	
+	/**
 	 * Stops this {@code FileStorePoller}.
 	 * 
 	 * @throws IllegalStateException If this {@code FileStorePoller} hasn't been

@@ -3,7 +3,6 @@ package falgout.backup;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.nio.file.FileStore;
@@ -22,8 +21,6 @@ import org.mockito.stubbing.Answer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FileStorePollerTest {
-	private static final Object wait = new Object();
-	
 	@Mock private FileStoreListener listener;
 	@Mock private FileSystem fileSystem;
 	@Mock private FileStore store;
@@ -59,11 +56,7 @@ public class FileStorePollerTest {
 		doAnswer(stop()).when(listener).fileStoreAdded(store);
 		poller.start();
 		
-		synchronized (wait) {
-			wait.wait(5000);
-		}
-		
-		verify(listener).fileStoreAdded(store);
+		assertTrue(poller.awaitTermination(5, TimeUnit.SECONDS));
 	}
 	
 	@Test
@@ -73,21 +66,13 @@ public class FileStorePollerTest {
 		doAnswer(stop()).when(listener).fileStoreRemoved(store);
 		poller.start();
 		
-		synchronized (wait) {
-			wait.wait(5000);
-		}
-		
-		verify(listener).fileStoreRemoved(store);
+		assertTrue(poller.awaitTermination(5, TimeUnit.SECONDS));
 	}
 	
 	private Answer<Void> stop() {
 		return new Answer<Void>() {
 			@Override
 			public Void answer(InvocationOnMock invocation) throws Throwable {
-				synchronized (wait) {
-					wait.notifyAll();
-				}
-				
 				poller.close();
 				return null;
 			}
