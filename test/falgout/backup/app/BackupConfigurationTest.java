@@ -91,10 +91,13 @@ public class BackupConfigurationTest {
 	public void SaveAndReload() throws IOException {
 		conf.addDirectory(src);
 		conf.addDirectory(bin);
-		conf.save();
-		BackupConfiguration conf2 = BackupConfiguration.load(store, locator);
-		assertEquals(conf, conf2);
-		assertEquals(conf.getDirectoriesToBackup(), conf2.getDirectoriesToBackup());
-		conf.delete();
+		try {
+			conf.save();
+			BackupConfiguration conf2 = BackupConfiguration.load(store, locator);
+			assertEquals(conf, conf2);
+			assertEquals(conf.getDirectoriesToBackup(), conf2.getDirectoriesToBackup());
+		} finally {
+			conf.delete();
+		}
 	}
 }
