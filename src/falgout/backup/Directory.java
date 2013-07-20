@@ -17,7 +17,7 @@ import java.util.Queue;
 
 import falgout.utils.AbstractIterator;
 
-public class Directory implements Iterable<Path> {
+public class Directory implements Comparable<Directory>, Iterable<Path> {
 	private static class OrDirectory implements Filter<Path> {
 		private final Filter<? super Path> f;
 		
@@ -117,6 +117,11 @@ public class Directory implements Iterable<Path> {
 	}
 	
 	@Override
+	public int compareTo(Directory o) {
+		return dir.compareTo(o.dir);
+	}
+	
+	@Override
 	public Iterator<Path> iterator() {
 		return iterator(ACCEPT_ALL);
 	}
@@ -153,10 +158,55 @@ public class Directory implements Iterable<Path> {
 		};
 	}
 	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((dir == null) ? 0 : dir.hashCode());
+		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof Directory)) {
+			return false;
+		}
+		Directory other = (Directory) obj;
+		if (dir == null) {
+			if (other.dir != null) {
+				return false;
+			}
+		} else if (!dir.equals(other.dir)) {
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Directory [dir=");
+		builder.append(dir);
+		builder.append("]");
+		return builder.toString();
+	}
+	
 	public static Directory get(String dir) throws IOException {
 		return get(Paths.get(dir));
 	}
 	
+	/**
+	 * 
+	 * @param dir A {@code Path} pointing to an existing directory.
+	 * @return A {@code Directory} of the given {@code Path}
+	 * @throws IOException If {@code dir} does not exist.
+	 */
 	public static Directory get(Path dir) throws IOException {
 		if (Files.notExists(dir)) {
 			throw new NoSuchFileException(dir.toString());
