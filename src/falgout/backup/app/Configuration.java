@@ -24,7 +24,7 @@ import javax.xml.bind.DatatypeConverter;
 import falgout.backup.AggregateFileStoreLocator;
 import falgout.backup.FileStoreLocator;
 
-public class BackupConfiguration {
+public class Configuration {
 	private static final String CONF_FILE = ".backupconf";
 	
 	private final FileStore store;
@@ -32,7 +32,7 @@ public class BackupConfiguration {
 	private final UUID id;
 	private final Set<Path> dirs = new TreeSet<>();
 	
-	private BackupConfiguration(FileStore store, Path root, UUID id, Collection<? extends Path> dirs) {
+	private Configuration(FileStore store, Path root, UUID id, Collection<? extends Path> dirs) {
 		this.store = store;
 		this.root = root;
 		this.id = id;
@@ -131,10 +131,10 @@ public class BackupConfiguration {
 		if (obj == null) {
 			return false;
 		}
-		if (!(obj instanceof BackupConfiguration)) {
+		if (!(obj instanceof Configuration)) {
 			return false;
 		}
-		BackupConfiguration other = (BackupConfiguration) obj;
+		Configuration other = (Configuration) obj;
 		if (id == null) {
 			if (other.id != null) {
 				return false;
@@ -158,11 +158,11 @@ public class BackupConfiguration {
 		return builder.toString();
 	}
 	
-	public static BackupConfiguration load(FileStore store) throws IOException {
+	public static Configuration load(FileStore store) throws IOException {
 		return load(store, AggregateFileStoreLocator.getDefault());
 	}
 	
-	public static BackupConfiguration load(FileStore store, FileStoreLocator locator) throws IOException {
+	public static Configuration load(FileStore store, FileStoreLocator locator) throws IOException {
 		Path root = locator.getRootLocation(store);
 		Path confFile = root.resolve(CONF_FILE);
 		
@@ -187,6 +187,6 @@ public class BackupConfiguration {
 			id = UUID.randomUUID();
 		}
 		
-		return new BackupConfiguration(store, root, id, dirs);
+		return new Configuration(store, root, id, dirs);
 	}
 }

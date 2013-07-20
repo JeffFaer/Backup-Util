@@ -18,7 +18,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import falgout.backup.FileStoreLocator;
 
 @RunWith(MockitoJUnitRunner.class)
-public class BackupConfigurationTest {
+public class ConfigurationTest {
 	private static final Path relSrc = Paths.get("src");
 	private static final Path relSrcFalgout = relSrc.resolve("falgout");
 	private static final Path bin = Paths.get("bin");
@@ -33,14 +33,14 @@ public class BackupConfigurationTest {
 	
 	@Mock private FileStore store;
 	@Mock private FileStoreLocator locator;
-	private BackupConfiguration conf;
+	private Configuration conf;
 	private Path src;
 	private Path srcFalgout;
 	
 	@Before
 	public void init() throws IOException {
 		when(locator.getRootLocation(store)).thenReturn(cd);
-		conf = BackupConfiguration.load(store, locator);
+		conf = Configuration.load(store, locator);
 		
 		src = relSrc;
 		srcFalgout = relSrcFalgout;
@@ -93,7 +93,7 @@ public class BackupConfigurationTest {
 		conf.addDirectory(bin);
 		try {
 			conf.save();
-			BackupConfiguration conf2 = BackupConfiguration.load(store, locator);
+			Configuration conf2 = Configuration.load(store, locator);
 			assertEquals(conf, conf2);
 			assertEquals(conf.getDirectoriesToBackup(), conf2.getDirectoriesToBackup());
 		} finally {
