@@ -79,7 +79,7 @@ public class BackupConfigurationTest {
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void ErrorIfAddingDisjointDirectory() throws IOException {
-		conf.addDirectory(Paths.get("/proc"));
+		conf.addDirectory(cd.getParent());
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
