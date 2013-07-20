@@ -116,6 +116,18 @@ public class Directory implements Comparable<Directory>, Iterable<Path> {
 		return dir;
 	}
 	
+	public Path resolve(String other) {
+		return dir.resolve(other);
+	}
+	
+	public Path resolve(Path other) {
+		return dir.resolve(other);
+	}
+	
+	public Path relativize(Path other) {
+		return dir.relativize(other);
+	}
+	
 	@Override
 	public int compareTo(Directory o) {
 		return dir.compareTo(o.dir);

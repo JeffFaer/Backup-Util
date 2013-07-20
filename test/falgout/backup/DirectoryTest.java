@@ -5,12 +5,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -39,19 +36,7 @@ public class DirectoryTest {
 	
 	@AfterClass
 	public static void afterClass() throws IOException {
-		Files.walkFileTree(tmp, new SimpleFileVisitor<Path>() {
-			@Override
-			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				Files.delete(file);
-				return FileVisitResult.CONTINUE;
-			}
-			
-			@Override
-			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-				Files.delete(dir);
-				return FileVisitResult.CONTINUE;
-			}
-		});
+		Directories.delete(Directory.get(tmp));
 	}
 	
 	@Test(expected = IOException.class)
