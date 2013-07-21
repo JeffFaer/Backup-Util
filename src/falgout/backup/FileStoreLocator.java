@@ -5,5 +5,5 @@ import java.nio.file.FileStore;
 import java.nio.file.Path;
 
 public interface FileStoreLocator {
-	public Path getRootLocation(FileStore store) throws IOException;
+    public Path getRootLocation(FileStore store) throws IOException;
 }

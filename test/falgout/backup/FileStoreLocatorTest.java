@@ -12,18 +12,18 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class FileStoreLocatorTest {
-	private static FileStoreLocator locator;
-	
-	@BeforeClass
-	public static void beforeClass() {
-		locator = AggregateFileStoreLocator.getDefault();
-	}
-	
-	@Test
-	public void SanityCheck() throws IOException {
-		Path cd = Paths.get(".").toRealPath();
-		FileStore s = Files.getFileStore(cd);
-		
-		assertTrue(cd.startsWith(locator.getRootLocation(s)));
-	}
+    private static FileStoreLocator locator;
+    
+    @BeforeClass
+    public static void beforeClass() {
+        locator = AggregateFileStoreLocator.getDefault();
+    }
+    
+    @Test
+    public void SanityCheck() throws IOException {
+        Path cd = Paths.get(".").toRealPath();
+        FileStore s = Files.getFileStore(cd);
+        
+        assertTrue(cd.startsWith(locator.getRootLocation(s)));
+    }
 }

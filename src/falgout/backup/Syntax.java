@@ -7,6 +7,6 @@ package falgout.backup;
  * 
  */
 public interface Syntax {
-	@Override
-	public String toString();
+    @Override
+    public String toString();
 }
