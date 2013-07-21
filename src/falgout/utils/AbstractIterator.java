@@ -31,7 +31,8 @@ public abstract class AbstractIterator<E> implements Iterator<E> {
 	@Override
 	public E next() {
 		if (next == null) {
-			if (!init()) { throw new NoSuchElementException(); }
+			init();
+			if (next == null) { throw new NoSuchElementException(); }
 		}
 		last = next;
 		next = findNext();
