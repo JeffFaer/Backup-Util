@@ -3,6 +3,7 @@ package falgout.backup;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
+import java.nio.file.CopyOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -60,12 +61,12 @@ public final class Directories {
 		});
 	}
 	
-	public static void copy(Directory source, Directory target) throws IOException {
-		copy(source, target, DO_NOTHING);
+	public static void copy(Directory source, Directory target, CopyOption... options) throws IOException {
+		copy(source, target, DO_NOTHING, options);
 	}
 	
 	public static void copy(final Directory source, final Directory target,
-			final FileVisitor<? super Path> progressMonitor) throws IOException {
+			final FileVisitor<? super Path> progressMonitor, final CopyOption... options) throws IOException {
 		Files.walkFileTree(source.getPath(), new FileVisitor<Path>() {
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
@@ -77,7 +78,7 @@ public final class Directories {
 			
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				Files.copy(file, target.resolve(source.relativize(file)));
+				Files.copy(file, target.resolve(source.relativize(file)), options);
 				
 				progressMonitor.visitFile(file, attrs);
 				return FileVisitResult.CONTINUE;
