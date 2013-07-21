@@ -17,8 +17,7 @@ import falgout.utils.OperatingSystem;
 public class AggregateFileStoreLocator implements FileStoreLocator {
 	private final Set<FileStoreLocator> locators = new CopyOnWriteArraySet<>();
 	
-	public AggregateFileStoreLocator() {
-	}
+	public AggregateFileStoreLocator() {}
 	
 	public AggregateFileStoreLocator(FileStoreLocator... locators) {
 		this(Arrays.asList(locators));
@@ -40,9 +39,7 @@ public class AggregateFileStoreLocator implements FileStoreLocator {
 	public Path getRootLocation(FileStore store) throws IOException {
 		for (FileStoreLocator l : locators) {
 			Path p = l.getRootLocation(store);
-			if (p != null) {
-				return p;
-			}
+			if (p != null) { return p; }
 		}
 		return null;
 	}

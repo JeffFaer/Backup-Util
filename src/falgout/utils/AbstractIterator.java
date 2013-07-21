@@ -8,8 +8,7 @@ public abstract class AbstractIterator<E> implements Iterator<E> {
 	protected E last;
 	private E next;
 	
-	public AbstractIterator() {
-	}
+	public AbstractIterator() {}
 	
 	private boolean init() {
 		if (!init) {
@@ -32,9 +31,7 @@ public abstract class AbstractIterator<E> implements Iterator<E> {
 	@Override
 	public E next() {
 		if (next == null) {
-			if (!init()) {
-				throw new NoSuchElementException();
-			}
+			if (!init()) { throw new NoSuchElementException(); }
 		}
 		last = next;
 		next = findNext();

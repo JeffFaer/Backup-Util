@@ -28,9 +28,7 @@ enum DefaultFileStoreLocator implements FileStoreLocator {
 					Path location = Paths.get(parts[1].replace("\\040", " "));
 					FileStore fs = Files.getFileStore(location);
 					
-					if (fs.equals(store)) {
-						return location;
-					}
+					if (fs.equals(store)) { return location; }
 				}
 			}
 			

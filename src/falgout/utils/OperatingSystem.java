@@ -3,8 +3,7 @@ package falgout.utils;
 import java.util.regex.Pattern;
 
 public final class OperatingSystem {
-	private OperatingSystem() {
-	}
+	private OperatingSystem() {}
 	
 	public static final String OS_NAME = "os.name";
 	

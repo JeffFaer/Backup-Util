@@ -65,9 +65,7 @@ public class Directory implements Comparable<Directory>, Iterable<Path> {
 					close();
 				}
 				
-				if (itr == null) {
-					return null;
-				}
+				if (itr == null) { return null; }
 				
 				while (itr.hasNext()) {
 					Path f = itr.next();
@@ -82,9 +80,7 @@ public class Directory implements Comparable<Directory>, Iterable<Path> {
 							return findNext();
 						}
 					}
-					if (ret) {
-						return dir.relativize(f);
-					}
+					if (ret) { return dir.relativize(f); }
 				}
 				
 				return null;
@@ -180,23 +176,13 @@ public class Directory implements Comparable<Directory>, Iterable<Path> {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (!(obj instanceof Directory)) {
-			return false;
-		}
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (!(obj instanceof Directory)) { return false; }
 		Directory other = (Directory) obj;
 		if (dir == null) {
-			if (other.dir != null) {
-				return false;
-			}
-		} else if (!dir.equals(other.dir)) {
-			return false;
-		}
+			if (other.dir != null) { return false; }
+		} else if (!dir.equals(other.dir)) { return false; }
 		return true;
 	}
 	
@@ -222,9 +208,7 @@ public class Directory implements Comparable<Directory>, Iterable<Path> {
 	public static Directory get(Path dir) throws IOException {
 		if (Files.notExists(dir)) {
 			throw new NoSuchFileException(dir.toString());
-		} else if (!Files.isDirectory(dir)) {
-			throw new IllegalArgumentException(dir + " is not a directory.");
-		}
+		} else if (!Files.isDirectory(dir)) { throw new IllegalArgumentException(dir + " is not a directory."); }
 		return new Directory(dir);
 	}
 	

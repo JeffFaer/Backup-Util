@@ -78,9 +78,7 @@ public class FileStorePoller implements Closeable {
 	 */
 	public void start() {
 		try (CloseableLock l = CloseableLock.lock(lock)) {
-			if (executor != null) {
-				throw new IllegalStateException("Already started.");
-			}
+			if (executor != null) { throw new IllegalStateException("Already started."); }
 			
 			executor = Executors.newSingleThreadScheduledExecutor();
 			executor.scheduleWithFixedDelay(new Runnable() {
@@ -135,9 +133,7 @@ public class FileStorePoller implements Closeable {
 	}
 	
 	private <T> List<T> asList(Iterable<T> i) {
-		if (i instanceof List) {
-			return (List<T>) i;
-		}
+		if (i instanceof List) { return (List<T>) i; }
 		
 		List<T> l = new ArrayList<>();
 		for (T t : i) {
@@ -177,9 +173,7 @@ public class FileStorePoller implements Closeable {
 	@Override
 	public void close() {
 		try (CloseableLock l = CloseableLock.lock(lock)) {
-			if (executor == null) {
-				throw new IllegalStateException("Not started.");
-			}
+			if (executor == null) { throw new IllegalStateException("Not started."); }
 			executor.shutdownNow();
 			executor = null;
 		}

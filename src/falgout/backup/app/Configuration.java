@@ -2,8 +2,6 @@ package falgout.backup.app;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
@@ -18,8 +16,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
-
-import javax.xml.bind.DatatypeConverter;
 
 import falgout.backup.AggregateFileStoreLocator;
 import falgout.backup.FileStoreLocator;
@@ -68,14 +64,11 @@ public class Configuration {
 			throw new NoSuchFileException(dir + " does not exist.");
 		} else if (!Files.isDirectory(dir)) {
 			throw new IllegalArgumentException(dir + " is not a directory.");
-		} else if (!dir.startsWith(root)) {
-			throw new IllegalArgumentException(dir + " is not a subdirectory of " + root);
-		}
+		} else if (!dir.startsWith(root)) { throw new IllegalArgumentException(dir + " is not a subdirectory of "
+				+ root); }
 		
 		for (Path d : dirs) {
-			if (rel.startsWith(d)) {
-				return;
-			}
+			if (rel.startsWith(d)) { return; }
 		}
 		
 		Iterator<Path> i = dirs.iterator();
@@ -94,14 +87,8 @@ public class Configuration {
 	}
 	
 	public void save() throws IOException {
-		byte[] bytes = new byte[16];
-		ByteBuffer b = ByteBuffer.wrap(bytes);
-		LongBuffer l = b.asLongBuffer();
-		l.put(id.getMostSignificantBits());
-		l.put(id.getLeastSignificantBits());
-		
 		try (BufferedWriter out = Files.newBufferedWriter(root.resolve(CONF_FILE), Charset.defaultCharset())) {
-			out.write(DatatypeConverter.printHexBinary(bytes));
+			out.write(id.toString());
 			out.newLine();
 			
 			for (Path p : dirs) {
@@ -125,23 +112,13 @@ public class Configuration {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (!(obj instanceof Configuration)) {
-			return false;
-		}
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (!(obj instanceof Configuration)) { return false; }
 		Configuration other = (Configuration) obj;
 		if (id == null) {
-			if (other.id != null) {
-				return false;
-			}
-		} else if (!id.equals(other.id)) {
-			return false;
-		}
+			if (other.id != null) { return false; }
+		} else if (!id.equals(other.id)) { return false; }
 		return true;
 	}
 	
@@ -171,14 +148,7 @@ public class Configuration {
 		if (Files.exists(confFile)) {
 			List<String> lines = Files.readAllLines(confFile, Charset.defaultCharset());
 			
-			byte[] bytes = DatatypeConverter.parseHexBinary(lines.get(0));
-			ByteBuffer b = ByteBuffer.wrap(bytes);
-			
-			LongBuffer l = b.asLongBuffer();
-			long msb = l.get();
-			long lsb = l.get();
-			
-			id = new UUID(msb, lsb);
+			id = UUID.fromString(lines.get(0));
 			
 			for (int i = 1; i < lines.size(); i++) {
 				dirs.add(Paths.get(lines.get(i)));

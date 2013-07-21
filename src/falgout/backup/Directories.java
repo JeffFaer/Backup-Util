@@ -18,20 +18,16 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class Directories {
-	public static final FileVisitor<Path> DO_NOTHING = new SimpleFileVisitor<Path>() {
-	};
+	public static final FileVisitor<Path> DO_NOTHING = new SimpleFileVisitor<Path>() {};
 	
-	private Directories() {
-	}
+	private Directories() {}
 	
 	public static void delete(Directory dir) throws IOException {
 		delete(dir, DO_NOTHING);
 	}
 	
 	public static void delete(Directory dir, final FileVisitor<? super Path> progressMonitor) throws IOException {
-		if (Files.notExists(dir.getPath())) {
-			return;
-		}
+		if (Files.notExists(dir.getPath())) { return; }
 		
 		Files.walkFileTree(dir.getPath(), new FileVisitor<Path>() {
 			@Override
