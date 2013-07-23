@@ -126,9 +126,9 @@ public class History implements Serializable {
             }
         } else {
             h = new History(id);
+            // readResolve takes care of this for ObjectInputStreams
+            CACHE.put(id, new SoftReference<>(h));
         }
-        
-        CACHE.put(id, new SoftReference<>(h));
         
         return h;
     }
