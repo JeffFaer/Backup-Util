@@ -23,8 +23,8 @@ import java.util.Set;
 import java.util.UUID;
 
 public class History implements Serializable {
-    public static final Path HISTORY_DIR = Paths.get(".history");
-    
+    public static final Path HISTORY_DIR = Paths.get(System.getProperty("user.home")).resolve(".backup-history");
+
     private static final long serialVersionUID = 896130173729570254L;
     private static final Map<UUID, SoftReference<History>> CACHE = new LinkedHashMap<>();
     
