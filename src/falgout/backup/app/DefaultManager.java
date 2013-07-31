@@ -10,10 +10,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.google.inject.Inject;
+
 import falgout.backup.AggregateFileStoreLocator;
 import falgout.backup.Directories;
 import falgout.backup.Directory;
 import falgout.backup.FileStoreLocator;
+import falgout.backup.guice.BackupLocation;
 
 public class DefaultManager extends AbstractManager {
     private final Path backupRoot;
@@ -27,7 +30,8 @@ public class DefaultManager extends AbstractManager {
         this(backupRoot, locator, MessageDigest.getInstance("md5"));
     }
     
-    public DefaultManager(Path backupRoot, FileStoreLocator locator, MessageDigest md) {
+    @Inject
+    public DefaultManager(@BackupLocation Path backupRoot, FileStoreLocator locator, MessageDigest md) {
         super(locator);
         this.backupRoot = backupRoot;
         this.md = md;
@@ -64,5 +68,16 @@ public class DefaultManager extends AbstractManager {
             }
         }
         return dirs;
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("DefaultManager [backupRoot=");
+        builder.append(backupRoot);
+        builder.append(", getMessageDigestAlgorithm()=");
+        builder.append(getMessageDigestAlgorithm());
+        builder.append("]");
+        return builder.toString();
     }
 }
