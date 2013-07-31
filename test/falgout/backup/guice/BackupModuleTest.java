@@ -43,17 +43,17 @@ public class BackupModuleTest {
     
     @Test(expected = CreationException.class)
     public void ErrorIfNoLocation() {
-        when(properties.propertyNames()).then(returnEmpty());
+        when(properties.propertyNames()).then(returnKeys());
         
         Injector i = Guice.createInjector(module);
         i.getProvider(BackupModule.LOCATION);
     }
     
-    private Answer<Enumeration<String>> returnEmpty() {
+    private Answer<Enumeration<String>> returnKeys(final String... keys) {
         return new Answer<Enumeration<String>>() {
             @Override
             public Enumeration<String> answer(InvocationOnMock invocation) throws Throwable {
-                return Collections.enumeration(Collections.<String> emptyList());
+                return Collections.enumeration(Arrays.asList(keys));
             }
         };
     }
@@ -61,19 +61,10 @@ public class BackupModuleTest {
     @Test
     public void InjectsLocationForBackupLocation() {
         Path location = Paths.get(System.getProperty("user.dir")).resolve("foo");
-        when(properties.propertyNames()).then(returnLocation());
+        when(properties.propertyNames()).then(returnKeys("location"));
         when(properties.getProperty("location")).thenReturn(location.toString());
         
         Injector i = Guice.createInjector(module);
         assertEquals(location, i.getInstance(Key.get(Path.class, BackupLocation.class)));
-    }
-    
-    private Answer<?> returnLocation() {
-        return new Answer<Enumeration<String>>() {
-            @Override
-            public Enumeration<String> answer(InvocationOnMock invocation) throws Throwable {
-                return Collections.enumeration(Arrays.asList("location"));
-            }
-        };
     }
 }
