@@ -60,11 +60,12 @@ public class BackupModuleTest {
     
     @Test
     public void InjectsLocationForBackupLocation() {
+        Path location = Paths.get(System.getProperty("user.dir")).resolve("foo");
         when(properties.propertyNames()).then(returnLocation());
-        when(properties.getProperty("location")).thenReturn("/home/jeffrey/foo");
+        when(properties.getProperty("location")).thenReturn(location.toString());
         
         Injector i = Guice.createInjector(module);
-        assertEquals(Paths.get("/home/jeffrey/foo"), i.getInstance(Key.get(Path.class, BackupLocation.class)));
+        assertEquals(location, i.getInstance(Key.get(Path.class, BackupLocation.class)));
     }
     
     private Answer<?> returnLocation() {
