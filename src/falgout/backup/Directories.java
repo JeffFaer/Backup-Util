@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class Directories {
     public static final FileVisitor<Path> DO_NOTHING = new SimpleFileVisitor<Path>() {};
@@ -102,46 +101,18 @@ public final class Directories {
         return isStructureSame(d1, d2, DO_NOTHING);
     }
     
-    public static boolean isStructureSame(final Directory d1, final Directory d2,
-            final FileVisitor<? super Path> progressMonitor) throws IOException {
-        final AtomicBoolean result = new AtomicBoolean(true);
+    public static boolean isStructureSame(Directory d1, Directory d2, FileVisitor<? super Path> progressMonitor)
+            throws IOException {
+        Set<Path> f1 = new TreeSet<>();
+        for (Path p : d1) {
+            f1.add(p);
+        }
+        Set<Path> f2 = new TreeSet<>();
+        for (Path p : d2) {
+            f2.add(p);
+        }
         
-        Files.walkFileTree(d1.getPath(), new FileVisitor<Path>() {
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                progressMonitor.preVisitDirectory(dir, attrs);
-                return check(dir);
-            }
-            
-            private FileVisitResult check(Path f) {
-                if (Files.exists(d2.resolve(d1.relativize(f)))) {
-                    return FileVisitResult.CONTINUE;
-                } else {
-                    result.set(false);
-                    return FileVisitResult.TERMINATE;
-                }
-            }
-            
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                progressMonitor.visitFile(file, attrs);
-                return check(file);
-            }
-            
-            @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                progressMonitor.visitFileFailed(file, exc);
-                return FileVisitResult.CONTINUE;
-            }
-            
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                progressMonitor.postVisitDirectory(dir, exc);
-                return FileVisitResult.CONTINUE;
-            }
-        });
-        
-        return result.get();
+        return f1.equals(f2);
     }
     
     public static byte[] digest(Directory dir, MessageDigest md) throws IOException {
@@ -158,10 +129,14 @@ public final class Directories {
             md.update(p.toString().getBytes());
         }
         
-        try (InputStream is = new SequenceInputStream(Collections.enumeration(streams))) {
+        return digest(new SequenceInputStream(Collections.enumeration(streams)), md);
+    }
+    
+    public static byte[] digest(InputStream in, MessageDigest md) throws IOException {
+        try (InputStream close = in) {
             byte[] buf = new byte[1024];
             int read;
-            while ((read = is.read(buf)) > 0) {
+            while ((read = in.read(buf)) > 0) {
                 md.update(buf, 0, read);
             }
         }

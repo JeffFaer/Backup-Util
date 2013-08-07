@@ -9,61 +9,74 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import org.junit.After;
+import org.jukito.JukitoModule;
+import org.jukito.JukitoRunner;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import com.google.inject.Inject;
+import com.google.inject.Provides;
+
+@RunWith(JukitoRunner.class)
 public class DirectoriesTest {
-    private Directory tmp1;
-    private Directory tmp2;
+    public static class A extends JukitoModule {
+        @Override
+        protected void configureTest() {}
+        
+        @Provides
+        TemporaryFileStructure create() {
+            return new TemporaryFileStructure();
+        }
+    }
+    
+    @Rule @Inject public TemporaryFileStructure files;
+    @Rule @Inject public TemporaryFileStructure files2;
+    
+    private Directory dir1;
+    private Directory dir2;
     
     @Before
     public void before() throws IOException {
-        tmp1 = Directory.get(Files.createTempDirectory("dirs"));
-        tmp2 = Directory.get(Files.createTempDirectory("dirs"));
-        
-        Files.createFile(tmp1.getPath().resolve("foo"));
-        Files.createDirectory(tmp1.getPath().resolve("bar"));
-        Files.createFile(tmp1.getPath().resolve("bar/foo2"));
-    }
-    
-    @After
-    public void after() throws IOException {
-        Directories.delete(tmp1);
-        Directories.delete(tmp2);
+        dir1 = Directory.get(files.dir);
+        dir2 = Directory.get(files2.dir);
+        Directories.delete(dir2);
+        Files.createDirectory(dir2.getPath());
     }
     
     @Test
     public void CopyTest() throws IOException {
-        Directories.copy(tmp1, tmp2);
-        assertTrue(Files.exists(tmp2.getPath().resolve("foo")));
-        assertTrue(Files.exists(tmp2.getPath().resolve("bar/foo2")));
+        Directories.copy(dir1, dir2);
+        assertTrue(Files.exists(files2.file1));
+        assertTrue(Files.exists(files2.file2));
     }
     
     @Test
     public void StructureTest() throws IOException {
-        assertFalse(Directories.isStructureSame(tmp1, tmp2));
-        Directories.copy(tmp1, tmp2);
-        assertTrue(Directories.isStructureSame(tmp1, tmp2));
+        assertFalse(Directories.isStructureSame(dir1, dir2));
+        assertFalse(Directories.isStructureSame(dir2, dir1));
+        Directories.copy(dir1, dir2);
+        assertTrue(Directories.isStructureSame(dir1, dir2));
     }
     
     @Test
     public void DeleteTest() throws IOException {
-        Directories.delete(tmp1);
-        assertTrue(Files.notExists(tmp1.getPath()));
+        Directories.delete(dir1);
+        assertTrue(Files.notExists(dir1.getPath()));
     }
     
     @Test
     public void CanDeleteNonExistentDirectory() throws IOException {
-        Directories.delete(tmp1);
-        Directories.delete(tmp1);
+        Directories.delete(dir1);
+        Directories.delete(dir1);
     }
     
     @Test
     public void DigestWorks() throws IOException, NoSuchAlgorithmException {
         MessageDigest md5 = MessageDigest.getInstance("md5");
-        byte[] md1 = Directories.digest(tmp1, md5);
-        byte[] md2 = Directories.digest(tmp2, md5);
+        byte[] md1 = Directories.digest(dir1, md5);
+        byte[] md2 = Directories.digest(dir2, md5);
         
         assertFalse(Arrays.equals(md1, md2));
     }

@@ -24,13 +24,13 @@ import java.util.UUID;
 
 public class History implements Serializable {
     public static final Path HISTORY_DIR = Paths.get(System.getProperty("user.home")).resolve(".backup-history");
-
+    
     private static final long serialVersionUID = 896130173729570254L;
     private static final Map<UUID, SoftReference<History>> CACHE = new LinkedHashMap<>();
     
     private final UUID id;
     private transient Set<Path> aliases;
-    private transient Map<Path, Hash> dirHashes;
+    private transient Map<Path, Hash> hashes;
     
     private History(UUID id) {
         this.id = id;
@@ -39,7 +39,7 @@ public class History implements Serializable {
     
     private void init() {
         aliases = new LinkedHashSet<>();
-        dirHashes = new LinkedHashMap<>();
+        hashes = new LinkedHashMap<>();
     }
     
     public UUID getID() {
@@ -67,7 +67,7 @@ public class History implements Serializable {
     }
     
     public boolean updateHash(Path dir, Hash hash) throws IOException {
-        Hash old = dirHashes.put(dir, hash);
+        Hash old = hashes.put(dir, hash);
         boolean changed = !Objects.equals(hash, old);
         if (changed) {
             save(this);
@@ -76,7 +76,7 @@ public class History implements Serializable {
     }
     
     public Map<Path, Hash> getHashes() {
-        return Collections.unmodifiableMap(dirHashes);
+        return Collections.unmodifiableMap(hashes);
     }
     
     @Override
@@ -106,8 +106,8 @@ public class History implements Serializable {
         builder.append(id);
         builder.append(", aliases=");
         builder.append(aliases);
-        builder.append(", dirHashes=");
-        builder.append(dirHashes);
+        builder.append(", hashes=");
+        builder.append(hashes);
         builder.append("]");
         return builder.toString();
     }
@@ -152,27 +152,27 @@ public class History implements Serializable {
             aliases.add(p.toString());
         }
         
-        Map<String, Hash> dirHashes = new LinkedHashMap<>(this.dirHashes.size());
-        for (Entry<Path, Hash> e : this.dirHashes.entrySet()) {
-            dirHashes.put(e.getKey().toString(), e.getValue());
+        Map<String, Hash> hashes = new LinkedHashMap<>(this.hashes.size());
+        for (Entry<Path, Hash> e : this.hashes.entrySet()) {
+            hashes.put(e.getKey().toString(), e.getValue());
         }
         
         out.defaultWriteObject();
         out.writeObject(aliases);
-        out.writeObject(dirHashes);
+        out.writeObject(hashes);
     }
     
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         List<String> aliases = (List<String>) in.readObject();
-        Map<String, Hash> dirHashes = (Map<String, Hash>) in.readObject();
+        Map<String, Hash> hashes = (Map<String, Hash>) in.readObject();
         
         init();
         for (String s : aliases) {
             this.aliases.add(Paths.get(s));
         }
-        for (Entry<String, Hash> e : dirHashes.entrySet()) {
-            this.dirHashes.put(Paths.get(e.getKey()), e.getValue());
+        for (Entry<String, Hash> e : hashes.entrySet()) {
+            this.hashes.put(Paths.get(e.getKey()), e.getValue());
         }
     }
     

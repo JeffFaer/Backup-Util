@@ -3,6 +3,8 @@ package falgout.backup.app;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import javax.xml.bind.DatatypeConverter;
+
 public final class Hash implements Serializable {
     private static final long serialVersionUID = 9093137937410642697L;
     
@@ -38,7 +40,7 @@ public final class Hash implements Serializable {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("Hash [hash=");
-        builder.append(Arrays.toString(hash));
+        builder.append(DatatypeConverter.printHexBinary(hash));
         builder.append("]");
         return builder.toString();
     }

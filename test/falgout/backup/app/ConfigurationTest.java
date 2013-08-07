@@ -21,7 +21,7 @@ import falgout.backup.FileStoreLocator;
 public class ConfigurationTest {
     private static final Path relSrc = Paths.get("src");
     private static final Path relSrcFalgout = relSrc.resolve("falgout");
-    private static final Path bin = Paths.get("bin");
+    private static final Path bin = Paths.get("target");
     private static final Path cd;
     static {
         try {

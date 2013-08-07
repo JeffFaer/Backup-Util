@@ -1,82 +1,70 @@
 package falgout.backup.app;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import com.google.inject.Inject;
 
-import falgout.backup.AggregateFileStoreLocator;
 import falgout.backup.Directories;
 import falgout.backup.Directory;
 import falgout.backup.FileStoreLocator;
 import falgout.backup.guice.BackupLocation;
 
 public class DefaultManager extends AbstractManager {
-    private final Path backupRoot;
+    private static final Filter<Path> FILES = new Filter<Path>() {
+        @Override
+        public boolean accept(Path entry) throws IOException {
+            return Files.isRegularFile(entry);
+        }
+    };
+    private final Path backupLocation;
     private final MessageDigest md;
     
-    public DefaultManager(Path backupRoot) throws NoSuchAlgorithmException {
-        this(backupRoot, AggregateFileStoreLocator.getDefault());
-    }
-    
-    public DefaultManager(Path backupRoot, FileStoreLocator locator) throws NoSuchAlgorithmException {
-        this(backupRoot, locator, MessageDigest.getInstance("md5"));
-    }
-    
     @Inject
-    public DefaultManager(@BackupLocation Path backupRoot, FileStoreLocator locator, MessageDigest md) {
+    public DefaultManager(@BackupLocation Path backupLocation, FileStoreLocator locator, MessageDigest md) {
         super(locator);
-        this.backupRoot = backupRoot;
+        this.backupLocation = backupLocation;
         this.md = md;
-    }
-    
-    public Path getBackupRoot() {
-        return backupRoot;
-    }
-    
-    public String getMessageDigestAlgorithm() {
-        return md.getAlgorithm();
     }
     
     @Override
     protected void doBackup(Configuration conf, History history) throws IOException {
-        List<Path> dirs = getDirectoriesToBackup(conf, history);
-        if (dirs.isEmpty()) { return; }
-        
-        DateFormat format = new SimpleDateFormat("YYYYMMddHHmmssSSSS");
-        Path backupDir = backupRoot.resolve(conf.getID().toString()).resolve(format.format(new Date()));
-        Directory d = Directory.create(backupDir);
-        
-        for (Path dir : dirs) {
-            Directories.copy(Directory.get(conf.getRoot().resolve(dir)), d);
-        }
+        List<Path> files = getFilesToBackup(conf, history);
+        System.out.println(conf);
+        System.out.println(history);
+        System.out.println(files);
     }
     
-    private List<Path> getDirectoriesToBackup(Configuration conf, History history) throws IOException {
-        List<Path> dirs = new ArrayList<>();
+    private List<Path> getFilesToBackup(Configuration conf, History history) throws IOException {
+        List<Path> backup = new ArrayList<>();
         for (Path dir : conf.getDirectoriesToBackup()) {
-            byte[] hash = Directories.digest(Directory.get(conf.getRoot().resolve(dir)), md);
-            if (history.updateHash(dir, hash)) {
-                dirs.add(dir);
+            Path resolvedDir = conf.getRoot().resolve(dir);
+            for (Path file : Directory.get(resolvedDir).iterable(FILES)) {
+                Path resolved = resolvedDir.resolve(file);
+                byte[] hash = Directories.digest(Files.newInputStream(resolved), md);
+                if (history.updateHash(resolvedDir.relativize(resolved), hash)) {
+                    backup.add(file);
+                }
             }
         }
-        return dirs;
+        
+        return backup;
     }
     
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("DefaultManager [backupRoot=");
-        builder.append(backupRoot);
-        builder.append(", getMessageDigestAlgorithm()=");
-        builder.append(getMessageDigestAlgorithm());
+        builder.append("DefaultManager [backupLocation=");
+        builder.append(backupLocation);
+        builder.append(", md=");
+        builder.append(md);
+        builder.append(", getLocator()=");
+        builder.append(getLocator());
         builder.append("]");
         return builder.toString();
     }

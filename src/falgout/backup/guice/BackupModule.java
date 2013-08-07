@@ -38,8 +38,6 @@ public class BackupModule extends AbstractModule {
     
     @Override
     protected void configure() {
-        requireBinding(LOCATION);
-        
         Names.bindProperties(binder(), props);
         bind(String.class).annotatedWith(BackupLocation.class).to(LOCATION);
     }

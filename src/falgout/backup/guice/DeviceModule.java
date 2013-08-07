@@ -28,6 +28,7 @@ public class DeviceModule extends AbstractModule {
         bind(UUID.class).toInstance(conf.getID());
         bind(FileStore.class).toInstance(conf.getFileStore());
         bind(Path.class).toInstance(conf.getRoot());
+        bind(Configuration.class).toInstance(conf);
         
         install(ThrowingProviderBinder.forModule(this));
     }

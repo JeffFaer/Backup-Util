@@ -12,31 +12,22 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.jukito.JukitoRunner;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import com.google.inject.Inject;
+
+@RunWith(JukitoRunner.class)
 public class DirectoryTest {
-    private static Path tmp;
-    private static Path file1;
-    private static Path file2;
-    private static Path file3;
-    private static Path nonExistant;
+    @Rule @Inject public TemporaryFileStructure files;
+    private Path nonExistant;
     
-    @BeforeClass
-    public static void beforeClass() throws IOException {
-        tmp = Files.createTempDirectory("test");
-        Files.createDirectory(tmp.resolve("foo"));
-        Files.createFile(file1 = tmp.resolve("file1"));
-        Files.createFile(file2 = tmp.resolve("file2"));
-        Files.createFile(file3 = tmp.resolve("foo/file3"));
-        
-        nonExistant = tmp.resolve("IDontExist");
-    }
-    
-    @AfterClass
-    public static void afterClass() throws IOException {
-        Directories.delete(Directory.get(tmp));
+    @Before
+    public void before() throws IOException {
+        nonExistant = files.dir.resolve("IDontExist");
     }
     
     @Test(expected = IOException.class)
@@ -46,12 +37,12 @@ public class DirectoryTest {
     
     @Test(expected = IllegalArgumentException.class)
     public void GettingDirectoryMustBeDirectory() throws IOException {
-        Directory.get(file1);
+        Directory.get(files.file1);
     }
     
     @Test(expected = IOException.class)
     public void CreatingDirectoryMustNotBeFile() throws IOException {
-        Directory.create(file1);
+        Directory.create(files.file1);
     }
     
     @Test
@@ -64,20 +55,20 @@ public class DirectoryTest {
     
     @Test
     public void IteratingIsRecursive() throws IOException {
-        Directory d = Directory.get(tmp);
-        Set<Path> files = new LinkedHashSet<>();
+        Directory d = Directory.get(files.dir);
+        Set<Path> files2 = new LinkedHashSet<>();
         for (Path file : d.iterable(new Filter<Path>() {
             @Override
             public boolean accept(Path entry) throws IOException {
                 return Files.isRegularFile(entry);
             }
         })) {
-            files.add(file);
+            files2.add(file);
         }
         
         assertEquals(
-                new LinkedHashSet<>(Arrays.asList(tmp.relativize(file1), tmp.relativize(file2), tmp.relativize(file3))),
-                files);
+                new LinkedHashSet<>(Arrays.asList(files.dir.relativize(files.file1), files.dir.relativize(files.file2))),
+                files2);
     }
     
     @Test
