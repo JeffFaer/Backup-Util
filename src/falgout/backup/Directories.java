@@ -18,46 +18,50 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public final class Directories {
-    public static final FileVisitor<Path> DO_NOTHING = new SimpleFileVisitor<Path>() {};
+    public static final FileVisitor<Object> DO_NOTHING = new SimpleFileVisitor<Object>() {};
     
     private Directories() {}
     
-    public static void delete(Directory dir) throws IOException {
+    public static void delete(Path dir) throws IOException {
         delete(dir, DO_NOTHING);
     }
     
-    public static void delete(Directory dir, final FileVisitor<? super Path> progressMonitor) throws IOException {
-        if (Files.notExists(dir.getPath())) { return; }
+    public static void delete(Path dir, final FileVisitor<? super Path> progressMonitor) throws IOException {
+        if (Files.notExists(dir)) { return; }
         
-        Files.walkFileTree(dir.getPath(), new FileVisitor<Path>() {
+        Files.walkFileTree(dir, new FileVisitor<Path>() {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                progressMonitor.preVisitDirectory(dir, attrs);
-                return FileVisitResult.CONTINUE;
+                return progressMonitor.preVisitDirectory(dir, attrs);
             }
             
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 Files.delete(file);
                 
-                progressMonitor.visitFile(file, attrs);
-                return FileVisitResult.CONTINUE;
+                return progressMonitor.visitFile(file, attrs);
             }
             
             @Override
             public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                progressMonitor.visitFileFailed(file, exc);
-                return FileVisitResult.CONTINUE;
+                return progressMonitor.visitFileFailed(file, exc);
             }
             
             @Override
             public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
                 Files.delete(dir);
                 
-                progressMonitor.postVisitDirectory(dir, exc);
-                return FileVisitResult.CONTINUE;
+                return progressMonitor.postVisitDirectory(dir, exc);
             }
         });
+    }
+    
+    public static void delete(Directory dir) throws IOException {
+        delete(dir, DO_NOTHING);
+    }
+    
+    public static void delete(Directory dir, FileVisitor<? super Path> progressMonitor) throws IOException {
+        delete(dir.getPath(), progressMonitor);
     }
     
     public static void copy(Directory source, Directory target, CopyOption... options) throws IOException {
@@ -71,28 +75,24 @@ public final class Directories {
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                 Files.createDirectories(target.resolve(source.relativize(dir)));
                 
-                progressMonitor.preVisitDirectory(dir, attrs);
-                return FileVisitResult.CONTINUE;
+                return progressMonitor.preVisitDirectory(dir, attrs);
             }
             
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 Files.copy(file, target.resolve(source.relativize(file)), options);
                 
-                progressMonitor.visitFile(file, attrs);
-                return FileVisitResult.CONTINUE;
+                return progressMonitor.visitFile(file, attrs);
             }
             
             @Override
             public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                progressMonitor.visitFileFailed(file, exc);
-                return FileVisitResult.CONTINUE;
+                return progressMonitor.visitFileFailed(file, exc);
             }
             
             @Override
             public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                progressMonitor.postVisitDirectory(dir, exc);
-                return FileVisitResult.CONTINUE;
+                return progressMonitor.postVisitDirectory(dir, exc);
             }
         });
     }
