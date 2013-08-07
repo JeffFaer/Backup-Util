@@ -66,9 +66,7 @@ public class DirectoryTest {
             files2.add(file);
         }
         
-        assertEquals(
-                new LinkedHashSet<>(Arrays.asList(files.dir.relativize(files.file1), files.dir.relativize(files.file2))),
-                files2);
+        assertEquals(new LinkedHashSet<>(Arrays.asList(files.file1, files.file2)), files2);
     }
     
     @Test
@@ -79,8 +77,8 @@ public class DirectoryTest {
             files.add(p);
         }
         
-        assertTrue(files.contains(Paths.get("LICENSE")));
-        assertTrue(files.contains(Paths.get("README.md")));
-        assertTrue(files.contains(Paths.get("src/falgout/backup/Directory.java")));
+        assertTrue(files.contains(Paths.get("./LICENSE")));
+        assertTrue(files.contains(Paths.get("./README.md")));
+        assertTrue(files.contains(Paths.get("./src/falgout/backup/Directory.java")));
     }
 }

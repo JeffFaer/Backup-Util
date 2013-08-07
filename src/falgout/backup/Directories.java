@@ -105,11 +105,11 @@ public final class Directories {
             throws IOException {
         Set<Path> f1 = new TreeSet<>();
         for (Path p : d1) {
-            f1.add(p);
+            f1.add(d1.relativize(p));
         }
         Set<Path> f2 = new TreeSet<>();
         for (Path p : d2) {
-            f2.add(p);
+            f2.add(d2.relativize(p));
         }
         
         return f1.equals(f2);

@@ -80,7 +80,7 @@ public class Directory implements Comparable<Directory>, Iterable<Path> {
                             return findNext();
                         }
                     }
-                    if (ret) { return dir.relativize(f); }
+                    if (ret) { return f; }
                 }
                 
                 return itrs.isEmpty() ? null : findNext();
