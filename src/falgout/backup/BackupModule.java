@@ -1,4 +1,4 @@
-package falgout.backup.guice;
+package falgout.backup;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,8 +14,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 
-import falgout.backup.AggregateFileStoreLocator;
-import falgout.backup.FileStoreLocator;
+import falgout.backup.guice.BackupLocation;
 
 public class BackupModule extends AbstractModule {
     public static final Key<String> LOCATION = Key.get(String.class, Names.named("location"));

@@ -1,4 +1,4 @@
-package falgout.backup.guice;
+package falgout.backup;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
@@ -23,6 +23,9 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+
+import falgout.backup.BackupModule;
+import falgout.backup.guice.BackupLocation;
 
 @RunWith(JukitoRunner.class)
 public class BackupModuleTest {
