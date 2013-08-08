@@ -19,17 +19,21 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
+import com.google.inject.Inject;
+
 import falgout.backup.FileStoreIdentifier;
 import falgout.backup.FileStoreLocator;
+import falgout.backup.guice.ConfigurationDirectory;
 
 class DefaultDevice extends AbstractDevice {
-    public static final Path DEFAULT_DIR = Paths.get(System.getProperty("user.home")).resolve(".backup-config");
     private final Path file;
     private final Set<Path> roots = new LinkedHashSet<>();
     private final Set<Path> pathsToBackup = new TreeSet<>();
     private final Map<Path, Hash> hashes = new LinkedHashMap<>();
     
-    public DefaultDevice(FileStore store, FileStoreLocator l, FileStoreIdentifier i, Path dir) throws IOException {
+    @Inject
+    public DefaultDevice(FileStore store, FileStoreLocator l, FileStoreIdentifier i, @ConfigurationDirectory Path dir)
+            throws IOException {
         super(store, l, i);
         file = dir.resolve(getID().toString());
         

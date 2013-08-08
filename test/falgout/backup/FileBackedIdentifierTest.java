@@ -21,7 +21,7 @@ public class FileBackedIdentifierTest {
     
     @Before
     public void init() throws IOException {
-        i = new FileBackedIdentifier(fs.locator, FileBackedIdentifier.DEFAULT_ID_FILE);
+        i = new FileBackedIdentifier(fs.locator, BackupModule.DEFAULT_ID_FILE);
     }
     
     @Test

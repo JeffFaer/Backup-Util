@@ -13,4 +13,4 @@ import com.google.inject.BindingAnnotation;
 @BindingAnnotation
 @Retention(RUNTIME)
 @Target({ FIELD, PARAMETER, METHOD })
-public @interface BackupLocation {}
+public @interface ConfigurationDirectory {}

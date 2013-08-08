@@ -1,61 +1,65 @@
 package falgout.backup;
 
+import java.lang.annotation.Annotation;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
 import com.google.inject.Key;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 
 import falgout.backup.guice.BackupLocation;
+import falgout.backup.guice.ConfigurationDirectory;
+import falgout.backup.guice.IdentificationFile;
+import falgout.backup.guice.PathProvider;
 
 public class BackupModule extends AbstractModule {
-    public static final Key<String> LOCATION = Key.get(String.class, Names.named("location"));
+    public static final Path DEFAULT_ID_FILE = Paths.get(".dev-id");
+    public static final Path DEFAULT_BACKUP_DIR = Paths.get(System.getProperty("user.home")).resolve(".backup");
+    public static final Path DEFAULT_CONF_DIR = DEFAULT_BACKUP_DIR.resolve(".conf");
     
-    private final Properties props;
+    public static final Map<String, String> DEFAULT_PROPERTIES;
+    static {
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("id", DEFAULT_ID_FILE.toString());
+        map.put("conf", DEFAULT_CONF_DIR.toString());
+        map.put("location", DEFAULT_BACKUP_DIR.toString());
+        
+        DEFAULT_PROPERTIES = Collections.unmodifiableMap(map);
+    }
     
-    @Inject
-    public BackupModule(Properties props) {
-        this.props = props;
+    private final Map<String, String> props;
+    
+    public BackupModule() {
+        this(Collections.EMPTY_MAP);
     }
     
     public BackupModule(Map<String, String> props) {
-        this.props = new Properties();
-        this.props.putAll(props);
-    }
-    
-    public Properties getProperties() {
-        return props;
+        props = new LinkedHashMap<>(props);
+        for (String key : DEFAULT_PROPERTIES.keySet()) {
+            if (!props.containsKey(key)) {
+                props.put(key, DEFAULT_PROPERTIES.get(key));
+            }
+        }
+        
+        this.props = props;
     }
     
     @Override
     protected void configure() {
         Names.bindProperties(binder(), props);
-        bind(String.class).annotatedWith(BackupLocation.class).to(LOCATION);
+        
+        bindPath("id", IdentificationFile.class);
+        bindPath("conf", ConfigurationDirectory.class);
+        bindPath("location", BackupLocation.class);
     }
     
-    @Provides
-    @BackupLocation
-    @Singleton
-    Path getLocation(@BackupLocation String location) {
-        return Paths.get(location);
-    }
-    
-    @Provides
-    @Singleton
-    FileStoreLocator getLocator() {
-        return AggregateFileStoreLocator.getDefault();
-    }
-    
-    @Provides
-    MessageDigest getDigest() throws NoSuchAlgorithmException {
-        return MessageDigest.getInstance("md5");
+    private void bindPath(String name, Class<? extends Annotation> clazz) {
+        Key<String> prop = Key.get(String.class, Names.named(name));
+        bind(String.class).annotatedWith(clazz).to(prop);
+        bind(Path.class).annotatedWith(clazz).toProvider(new PathProvider(getProvider(prop)));
     }
 }

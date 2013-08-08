@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 
@@ -20,7 +19,6 @@ import falgout.backup.guice.IdentificationFile;
 @Singleton
 public class FileBackedIdentifier implements FileStoreIdentifier {
     private static final Charset CHARSET = StandardCharsets.UTF_8;
-    public static final Path DEFAULT_ID_FILE = Paths.get(".dev-id");
     private final FileStoreLocator l;
     private final Path idFile;
     

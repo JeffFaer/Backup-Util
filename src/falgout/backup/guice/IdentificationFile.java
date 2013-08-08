@@ -13,6 +13,4 @@ import com.google.inject.BindingAnnotation;
 @BindingAnnotation
 @Retention(RUNTIME)
 @Target({ FIELD, PARAMETER, METHOD })
-public @interface IdentificationFile {
-    
-}
+public @interface IdentificationFile {}
