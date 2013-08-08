@@ -5,23 +5,21 @@ import java.nio.file.FileStore;
 
 import com.google.inject.Inject;
 
-import falgout.backup.FileStoreLocator;
-
 public abstract class AbstractManager implements Manager {
-    private final FileStoreLocator locator;
+    private final DeviceFactory factory;
     
     @Inject
-    protected AbstractManager(FileStoreLocator locator) {
-        this.locator = locator;
+    public AbstractManager(DeviceFactory factory) {
+        this.factory = factory;
     }
     
-    public FileStoreLocator getLocator() {
-        return locator;
+    public DeviceFactory getFactory() {
+        return factory;
     }
     
     @Override
     public void backup(FileStore store) throws IOException {
-        
+        doBackup(factory.create(store));
     }
     
     protected abstract void doBackup(Device dev) throws IOException;
