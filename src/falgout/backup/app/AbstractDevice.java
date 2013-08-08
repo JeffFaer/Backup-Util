@@ -3,6 +3,10 @@ package falgout.backup.app;
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import falgout.backup.FileStoreIdentifier;
@@ -48,44 +52,75 @@ public abstract class AbstractDevice implements Device {
     
     @Override
     public boolean updateHash(Path p, Hash hash) throws IOException {
-        boolean changed = doUpdateHash(p, hash);
-        if (changed) {
-            doSave();
-        }
-        return changed;
+        return doSave(doUpdateHash(p, hash));
     }
     
     protected abstract boolean doUpdateHash(Path p, Hash hash);
     
     @Override
-    public boolean addPathToBackup(Path p) throws IOException {
-        boolean changed = doAddPathToBackup(p);
-        if (changed) {
-            doSave();
+    public Map<Path, Boolean> updateHashes(Map<Path, byte[]> hashes) throws IOException {
+        boolean changed = false;
+        Map<Path, Boolean> results = new LinkedHashMap<>(hashes.size());
+        for (Entry<Path, byte[]> e : hashes.entrySet()) {
+            boolean r = doUpdateHash(e.getKey(), new Hash(e.getValue()));
+            changed = changed || r;
+            results.put(e.getKey(), r);
         }
-        return changed;
+        doSave(changed);
+        return results;
+    }
+    
+    @Override
+    public boolean addPathToBackup(Path p) throws IOException {
+        return doSave(doAddPathToBackup(p));
     }
     
     protected abstract boolean doAddPathToBackup(Path p);
     
     @Override
-    public boolean removePathToBackup(Path p) throws IOException {
-        boolean changed = doRemovePathToBackup(p);
-        if (changed) {
-            doSave();
+    public Map<Path, Boolean> addPathsToBackup(Collection<? extends Path> paths) throws IOException {
+        boolean changed = false;
+        Map<Path, Boolean> results = new LinkedHashMap<>(paths.size());
+        for (Path p : paths) {
+            boolean r = doAddPathToBackup(p);
+            changed = changed || r;
+            results.put(p, r);
         }
-        return changed;
+        doSave(changed);
+        return results;
+    }
+    
+    @Override
+    public boolean removePathToBackup(Path p) throws IOException {
+        return doSave(doRemovePathToBackup(p));
     }
     
     protected abstract boolean doRemovePathToBackup(Path p);
     
-    private void doSave() throws IOException {
-        save();
-        
-        if (setID) {
-            i.setID(store, id);
-            setID = false;
+    @Override
+    public Map<Path, Boolean> removePathsToBackup(Collection<? extends Path> paths) throws IOException {
+        boolean changed = false;
+        Map<Path, Boolean> results = new LinkedHashMap<>(paths.size());
+        for (Path p : paths) {
+            boolean r = doRemovePathToBackup(p);
+            changed = changed || r;
+            results.put(p, r);
         }
+        doSave(changed);
+        return results;
+    }
+    
+    private boolean doSave(boolean actuallySave) throws IOException {
+        if (actuallySave) {
+            save();
+            
+            if (setID) {
+                i.setID(store, id);
+                setID = false;
+            }
+        }
+        
+        return actuallySave;
     }
     
     protected abstract void save() throws IOException;
