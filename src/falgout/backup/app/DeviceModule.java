@@ -1,18 +1,11 @@
 package falgout.backup.app;
 
-import java.nio.file.FileStore;
-
 import com.google.inject.AbstractModule;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 public class DeviceModule extends AbstractModule {
-    private final FileStore store;
-    
-    public DeviceModule(FileStore store) {
-        this.store = store;
-    }
-    
     @Override
     protected void configure() {
-        bind(FileStore.class).toInstance(store);
+        install(new FactoryModuleBuilder().implement(Device.class, DefaultDevice.class).build(DeviceFactory.class));
     }
 }

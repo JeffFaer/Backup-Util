@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 
 import falgout.backup.FileStoreIdentifier;
 import falgout.backup.FileStoreLocator;
@@ -32,8 +33,8 @@ class DefaultDevice extends AbstractDevice {
     private final Map<Path, Hash> hashes = new LinkedHashMap<>();
     
     @Inject
-    public DefaultDevice(FileStore store, FileStoreLocator l, FileStoreIdentifier i, @ConfigurationDirectory Path dir)
-            throws IOException {
+    public DefaultDevice(@Assisted FileStore store, FileStoreLocator l, FileStoreIdentifier i,
+            @ConfigurationDirectory Path dir) throws IOException {
         super(store, l, i);
         file = dir.resolve(getID().toString());
         
