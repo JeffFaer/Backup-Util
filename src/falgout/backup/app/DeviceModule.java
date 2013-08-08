@@ -6,6 +6,8 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 public class DeviceModule extends AbstractModule {
     @Override
     protected void configure() {
-        install(new FactoryModuleBuilder().implement(Device.class, DefaultDevice.class).build(DeviceFactory.class));
+        install(new FactoryModuleBuilder().implement(Device.class, DefaultDevice.class)
+                .implement(DeviceData.class, DefaultDevice.Data.class)
+                .build(DeviceFactory.class));
     }
 }

@@ -26,7 +26,7 @@ import falgout.backup.TemporaryFileStructure;
 
 @RunWith(JukitoRunner.class)
 public class DefaultDeviceTest {
-    @Rule @Inject public TemporaryFileStructure files;
+    @Rule @Inject public TemporaryFileStructure config;
     @Rule @Inject public TemporaryFileStore fs;
     @Inject private FileStoreIdentifier i;
     private DefaultDevice dev;
@@ -37,7 +37,7 @@ public class DefaultDeviceTest {
     }
     
     private DefaultDevice create() throws IOException {
-        return new DefaultDevice(fs.store, fs.locator, i, files.dir);
+        return new DefaultDevice(fs.store, fs.locator, i, config.dir);
     }
     
     @Test
@@ -105,7 +105,7 @@ public class DefaultDeviceTest {
     
     @Test
     public void AutomaticallySaves() throws IOException {
-        Path file = files.dir.resolve(dev.getID().toString());
+        Path file = config.dir.resolve(dev.getID().toString());
         
         assertTrue(Files.notExists(file));
         assertTrue(dev.addPathToBackup(Paths.get("")));

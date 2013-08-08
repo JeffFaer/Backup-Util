@@ -5,21 +5,11 @@ import java.nio.file.FileStore;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
-public interface Device {
+public interface Device extends DeviceData {
     public FileStore getFileStore();
     
     public Path getRoot();
-    
-    public UUID getID();
-    
-    public Set<Path> getPreviousRoots();
-    
-    public Set<Path> getPathsToBackup();
-    
-    public Map<Path, Hash> getHashes();
     
     public boolean addPathToBackup(Path p) throws IOException;
     

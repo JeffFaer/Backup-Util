@@ -6,7 +6,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 
 public class MockModule extends AbstractModule {
-    private final TemporaryFileStore fs;
+    public final TemporaryFileStore fs;
     
     @Inject
     public MockModule(TemporaryFileStore fs) {
