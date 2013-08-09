@@ -37,7 +37,7 @@ public class TemporaryFileStructure extends ExternalResource {
     @Override
     protected void after() {
         try {
-            Directories.delete(Directory.get(dir));
+            Directories.delete(dir);
         } catch (NoSuchFileException e) {} catch (IOException e) {
             throw new Error(e);
         }
