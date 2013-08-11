@@ -59,7 +59,7 @@ class DefaultDevice extends AbstractDevice {
                     pathsToBackup = (Set<String>) ois.readObject();
                     hashes = (Map<String, Hash>) ois.readObject();
                 } catch (ClassNotFoundException e) {
-                    throw new Error("Malformed device file for " + this + ".", e);
+                    throw new Error("Malformed device file for " + id + ".", e);
                 }
                 
                 for (String s : roots) {
