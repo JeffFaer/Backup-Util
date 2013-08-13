@@ -3,6 +3,7 @@ package falgout.backup;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.nio.file.CopyOption;
@@ -32,12 +33,21 @@ public final class Directories {
         
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            FileVisitResult r = (FileVisitResult) method.invoke(monitor, args);
-            if (r != FileVisitResult.TERMINATE) {
-                FileVisitResult r2 = (FileVisitResult) method.invoke(action, args);
-                if (r2 == FileVisitResult.TERMINATE) { return r2; }
+            if (method.getDeclaringClass().equals(FileVisitor.class)) {
+                FileVisitResult r;
+                try {
+                    r = (FileVisitResult) method.invoke(monitor, args);
+                    if (r != FileVisitResult.TERMINATE) {
+                        FileVisitResult r2 = (FileVisitResult) method.invoke(action, args);
+                        if (r2 == FileVisitResult.TERMINATE) { return r2; }
+                    }
+                    return r;
+                } catch (InvocationTargetException e) {
+                    throw e.getCause();
+                }
+            } else {
+                return method.invoke(proxy, args);
             }
-            return r;
         }
     }
     
@@ -176,8 +186,6 @@ public final class Directories {
         }
     }
     
-    // JS5161121
-    
     public static final FileVisitor<Object> NO_MONITOR = new SimpleFileVisitor<Object>() {};
     public static final EnumSet<FileVisitOption> NO_OPTIONS = EnumSet.noneOf(FileVisitOption.class);
     
@@ -194,14 +202,14 @@ public final class Directories {
     }
     
     public static void delete(Path dir, FileVisitor<? super Path> monitor) throws IOException {
-        delete(dir, monitor, NO_OPTIONS, Integer.MAX_VALUE);
+        delete(dir, monitor, NO_OPTIONS);
     }
     
-    public static void delete(Path dir, FileVisitor<? super Path> monitor, Set<FileVisitOption> options, int maxDepth)
+    public static void delete(Path dir, FileVisitor<? super Path> monitor, Set<FileVisitOption> options)
             throws IOException {
         if (Files.notExists(dir)) { return; }
         
-        Files.walkFileTree(dir, options, maxDepth, createMonitoredFileVisitor(new Delete<>(), monitor));
+        Files.walkFileTree(dir, options, Integer.MAX_VALUE, createMonitoredFileVisitor(new Delete<>(), monitor));
     }
     
     public static void copy(Path from, Path to, CopyOption... options) throws IOException {
