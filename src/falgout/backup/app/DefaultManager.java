@@ -10,7 +10,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -148,15 +147,10 @@ class DefaultManager extends AbstractManager {
     
     Path getRestoreDir(DeviceData dev, Date date) throws IOException {
         SortedSet<Date> dates = getBackupDates(dev.getID());
-        Iterator<Date> i = dates.iterator();
-        while (i.hasNext()) {
-            Date d = i.next();
-            if (d.after(date)) {
-                i.remove();
-            }
-        }
+        if (dates.isEmpty()) { return null; }
         
-        return dates.isEmpty() ? null : getBackupDir(dev, dates.last());
+        Date restore = dates.contains(date) ? date : dates.headSet(date).last();
+        return getBackupDir(dev, restore);
     }
     
     @Override
