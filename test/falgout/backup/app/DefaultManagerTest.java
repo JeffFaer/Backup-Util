@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -23,7 +22,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -56,14 +54,7 @@ public class DefaultManagerTest {
         Map<String, String> props = new LinkedHashMap<>();
         props.put("conf", conf.dir.toString());
         props.put("location", backup.dir.toString());
-        final MessageDigest md = MessageDigest.getInstance("md5");
-        Injector i = Guice.createInjector(new BackupModule(props), new DeviceModule(), new MockModule(fs),
-                new AbstractModule() {
-                    @Override
-                    protected void configure() {
-                        bind(MessageDigest.class).toInstance(md);
-                    }
-                });
+        Injector i = Guice.createInjector(new BackupModule(props), new DeviceModule(), new MockModule(fs));
         m = i.getInstance(DefaultManager.class);
         dev = i.getInstance(DeviceFactory.class).create(fs.store);
         dev.addPathToBackup(fs.dir1);
