@@ -166,7 +166,7 @@ public final class Directories {
             return checkFile(file) ? FileVisitResult.CONTINUE : FileVisitResult.TERMINATE;
         }
         
-        private boolean checkFile(P file) {
+        private boolean checkFile(P file) throws IOException {
             return lastCheck = checker.areFilesSame(file, d2.resolve(d1.relativize(file)));
         }
         
@@ -176,7 +176,7 @@ public final class Directories {
     }
     
     public static interface FileChecker<P extends Path> {
-        public boolean areFilesSame(P p1, P p2);
+        public boolean areFilesSame(P p1, P p2) throws IOException;
     }
     
     public static class FileExistsChecker<P extends Path> implements FileChecker<P> {
@@ -193,7 +193,7 @@ public final class Directories {
     
     public static <T> FileVisitor<T> createMonitoredFileVisitor(FileVisitor<? super T> action,
             FileVisitor<? super T> monitor) {
-        return (FileVisitor<T>) Proxy.newProxyInstance(Directories.class.getClassLoader(),
+        return (FileVisitor<T>) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                 new Class<?>[] { FileVisitor.class }, new FileActionInvocationHandler<>(action, monitor));
     }
     
@@ -243,6 +243,10 @@ public final class Directories {
     
     public static boolean isStructureSame(Path d1, Path d2, FileVisitor<? super Path> monitor) throws IOException {
         return isStructureSame(d1, d2, monitor, new FileExistsChecker<>());
+    }
+    
+    public static boolean isStructureSame(Path d1, Path d2, FileChecker<? super Path> checker) throws IOException {
+        return isStructureSame(d1, d2, NO_MONITOR, checker);
     }
     
     public static boolean isStructureSame(Path d1, Path d2, FileVisitor<? super Path> monitor,

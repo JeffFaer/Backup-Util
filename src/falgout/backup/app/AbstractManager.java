@@ -3,10 +3,10 @@ package falgout.backup.app;
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.Path;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.UUID;
 
 public abstract class AbstractManager implements Manager {
@@ -29,30 +29,30 @@ public abstract class AbstractManager implements Manager {
     
     @Override
     public void restore(FileStore store) throws IOException {
-        restore(store, Calendar.getInstance());
+        restore(store, new Date());
     }
     
     @Override
-    public void restore(FileStore store, Calendar date) throws IOException {
+    public void restore(FileStore store, Date date) throws IOException {
         Device dev = factory.create(store);
         doRestore(dev, dev.getRoot(), date);
     }
     
     @Override
     public void restore(UUID id, Path dir) throws IOException {
-        restore(id, dir, Calendar.getInstance());
+        restore(id, dir, new Date());
     }
     
     @Override
-    public void restore(UUID id, Path dir, Calendar date) throws IOException {
+    public void restore(UUID id, Path dir, Date date) throws IOException {
         doRestore(factory.create(id), dir, date);
     }
     
-    protected abstract void doRestore(DeviceData data, Path dir, Calendar date) throws IOException;
+    protected abstract void doRestore(DeviceData data, Path dir, Date date) throws IOException;
     
     @Override
-    public Map<UUID, Set<Calendar>> getBackupDates() throws IOException {
-        Map<UUID, Set<Calendar>> dates = new LinkedHashMap<>();
+    public Map<UUID, SortedSet<Date>> getBackupDates() throws IOException {
+        Map<UUID, SortedSet<Date>> dates = new LinkedHashMap<>();
         for (UUID id : getManagedDevices()) {
             dates.put(id, getBackupDates(id));
         }
