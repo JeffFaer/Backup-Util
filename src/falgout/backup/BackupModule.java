@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
@@ -22,6 +23,7 @@ public class BackupModule extends AbstractModule {
     public static final Path DEFAULT_CONF_DIR = DEFAULT_BACKUP_DIR.resolve(".conf");
     
     public static final Map<String, String> DEFAULT_PROPERTIES;
+    private static final Properties DEFAULT_PROPS;
     static {
         Map<String, String> map = new LinkedHashMap<>();
         map.put("id", DEFAULT_ID_FILE.toString());
@@ -29,23 +31,20 @@ public class BackupModule extends AbstractModule {
         map.put("location", DEFAULT_BACKUP_DIR.toString());
         
         DEFAULT_PROPERTIES = Collections.unmodifiableMap(map);
+        
+        DEFAULT_PROPS = new Properties();
+        DEFAULT_PROPS.putAll(DEFAULT_PROPERTIES);
     }
     
-    private final Map<String, String> props;
+    private final Properties props;
     
     public BackupModule() {
         this(Collections.EMPTY_MAP);
     }
     
     public BackupModule(Map<String, String> props) {
-        props = new LinkedHashMap<>(props);
-        for (String key : DEFAULT_PROPERTIES.keySet()) {
-            if (!props.containsKey(key)) {
-                props.put(key, DEFAULT_PROPERTIES.get(key));
-            }
-        }
-        
-        this.props = props;
+        this.props = new Properties(DEFAULT_PROPS);
+        this.props.putAll(props);
     }
     
     @Override
