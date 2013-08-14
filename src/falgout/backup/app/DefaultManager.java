@@ -5,6 +5,7 @@ import static falgout.backup.Directories.NO_OPTIONS;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -145,17 +146,22 @@ class DefaultManager extends AbstractManager {
         return root.resolve(FORMAT.get().format(date));
     }
     
-    Path getRestoreDir(DeviceData dev, Date date) throws IOException {
+    Date getRestoreDate(DeviceData dev, Date date) throws IOException {
         SortedSet<Date> dates = getBackupDates(dev.getID());
         if (dates.isEmpty()) { return null; }
         
-        Date restore = dates.contains(date) ? date : dates.headSet(date).last();
-        return getBackupDir(dev, restore);
+        return dates.contains(date) ? date : dates.headSet(date).last();
+    }
+    
+    Path getRestoreDir(DeviceData dev, Date date) throws IOException {
+        Date d = getRestoreDate(dev, date);
+        return d == null ? null : getBackupDir(dev, d);
     }
     
     @Override
     protected void doRestore(DeviceData data, Path dir, Date date) throws IOException {
-        // TODO Auto-generated method stub
-        
+        Path restoreDir = getRestoreDir(data, date);
+        if (restoreDir == null) { throw new IllegalStateException("No backups for " + data.getID()); }
+        Directories.copy(restoreDir, dir, StandardCopyOption.REPLACE_EXISTING);
     }
 }

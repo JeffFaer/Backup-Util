@@ -136,4 +136,34 @@ public class DefaultManagerTest {
             }
         });
     }
+    
+    @Test
+    public void GetRestoreDateReturnsNewestThatIsNotNewerThanDate() throws InterruptedException, IOException {
+        for (int x = 0; x < 3; x++) {
+            m.backup(fs.store);
+            Thread.sleep(10);
+        }
+        
+        SortedSet<Date> dates = m.getBackupDates(dev.getID());
+        Date last = dates.last();
+        assertEquals(last, m.getRestoreDate(dev, new Date()));
+        
+        Date lastMinusFive = new Date(last.getTime() - 5);
+        assertEquals(dates.headSet(last).last(), m.getRestoreDate(dev, lastMinusFive));
+    }
+    
+    @Test
+    public void RestoringCopiesFilesFromBackup() throws IOException {
+        m.backup(fs.store);
+        
+        Path target = Files.createTempDirectory("restore");
+        m.restore(dev.getID(), target);
+        
+        assertTrue(Directories.isStructureSame(target, m.getRestoreDir(dev, new Date())));
+    }
+    
+    @Test(expected = IllegalStateException.class)
+    public void RestoringWithoutBackupNotAllowed() throws IOException {
+        m.restore(fs.store);
+    }
 }
