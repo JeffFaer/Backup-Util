@@ -19,6 +19,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
@@ -26,6 +28,7 @@ import com.google.inject.assistedinject.AssistedInject;
 import falgout.backup.FileStoreIdentifier;
 import falgout.backup.FileStoreLocator;
 import falgout.backup.guice.ConfigurationDirectory;
+import falgout.utils.CloseableLock;
 
 class DefaultDevice extends AbstractDevice {
     static class Data extends AbstractDeviceData {
@@ -36,6 +39,7 @@ class DefaultDevice extends AbstractDevice {
         final Set<Path> roots = new LinkedHashSet<>();
         final Set<Path> pathsToBackup = new TreeSet<>();
         final Map<Path, Hash> hashes = new LinkedHashMap<>();
+        final ReadWriteLock lock = new ReentrantReadWriteLock();
         
         @AssistedInject
         public Data(@Assisted UUID id, @ConfigurationDirectory Path dir) throws IOException {
@@ -77,25 +81,27 @@ class DefaultDevice extends AbstractDevice {
         }
         
         void save() throws IOException {
-            Set<String> roots = new LinkedHashSet<>(this.roots.size());
-            Set<String> pathsToBackup = new LinkedHashSet<>(this.pathsToBackup.size());
-            Map<String, Hash> hashes = new LinkedHashMap<>(this.hashes.size());
-            
-            for (Path p : this.roots) {
-                roots.add(p.toString());
-            }
-            for (Path p : this.pathsToBackup) {
-                pathsToBackup.add(p.toString());
-            }
-            for (Entry<Path, Hash> e : this.hashes.entrySet()) {
-                hashes.put(e.getKey().toString(), e.getValue());
-            }
-            
-            try (OutputStream out = Files.newOutputStream(confFile);
-                    ObjectOutputStream oos = new ObjectOutputStream(out)) {
-                oos.writeObject(roots);
-                oos.writeObject(pathsToBackup);
-                oos.writeObject(hashes);
+            try (CloseableLock l = CloseableLock.read(lock)) {
+                Set<String> roots = new LinkedHashSet<>(this.roots.size());
+                Set<String> pathsToBackup = new LinkedHashSet<>(this.pathsToBackup.size());
+                Map<String, Hash> hashes = new LinkedHashMap<>(this.hashes.size());
+                
+                for (Path p : this.roots) {
+                    roots.add(p.toString());
+                }
+                for (Path p : this.pathsToBackup) {
+                    pathsToBackup.add(p.toString());
+                }
+                for (Entry<Path, Hash> e : this.hashes.entrySet()) {
+                    hashes.put(e.getKey().toString(), e.getValue());
+                }
+                
+                try (OutputStream out = Files.newOutputStream(confFile);
+                        ObjectOutputStream oos = new ObjectOutputStream(out)) {
+                    oos.writeObject(roots);
+                    oos.writeObject(pathsToBackup);
+                    oos.writeObject(hashes);
+                }
             }
         }
         
@@ -106,17 +112,23 @@ class DefaultDevice extends AbstractDevice {
         
         @Override
         public Set<Path> getPreviousRoots() {
-            return Collections.unmodifiableSet(roots);
+            try (CloseableLock l = CloseableLock.read(lock)) {
+                return Collections.unmodifiableSet(roots);
+            }
         }
         
         @Override
         public Set<Path> getPathsToBackup() {
-            return Collections.unmodifiableSet(pathsToBackup);
+            try (CloseableLock l = CloseableLock.read(lock)) {
+                return Collections.unmodifiableSet(pathsToBackup);
+            }
         }
         
         @Override
         public Map<Path, Hash> getHashes() {
-            return Collections.unmodifiableMap(hashes);
+            try (CloseableLock l = CloseableLock.read(lock)) {
+                return Collections.unmodifiableMap(hashes);
+            }
         }
     }
     
@@ -179,7 +191,10 @@ class DefaultDevice extends AbstractDevice {
     
     @Override
     protected boolean doUpdateHash(Path p, Hash hash) {
-        Hash old = data.hashes.put(p, hash);
+        Hash old;
+        try (CloseableLock l = CloseableLock.write(data.lock)) {
+            old = data.hashes.put(p, hash);
+        }
         return !Objects.equals(hash, old);
     }
     
@@ -198,25 +213,29 @@ class DefaultDevice extends AbstractDevice {
         
         // same as root
         if (Paths.get("").equals(rel)) {
-            data.pathsToBackup.clear();
-            return data.pathsToBackup.add(rel);
-        }
-        
-        Iterator<Path> itr = data.pathsToBackup.iterator();
-        while (itr.hasNext()) {
-            Path path = itr.next();
-            
-            // same as root directory
-            if (Paths.get("").equals(path)) { return false; }
-            
-            if (rel.startsWith(path)) {
-                return false;
-            } else if (path.startsWith(rel)) {
-                itr.remove();
+            try (CloseableLock l = CloseableLock.write(data.lock)) {
+                data.pathsToBackup.clear();
+                return data.pathsToBackup.add(rel);
             }
         }
         
-        return data.pathsToBackup.add(rel);
+        try (CloseableLock l = CloseableLock.write(data.lock)) {
+            Iterator<Path> itr = data.pathsToBackup.iterator();
+            while (itr.hasNext()) {
+                Path path = itr.next();
+                
+                // same as root directory
+                if (Paths.get("").equals(path)) { return false; }
+                
+                if (rel.startsWith(path)) {
+                    return false;
+                } else if (path.startsWith(rel)) {
+                    itr.remove();
+                }
+            }
+            
+            return data.pathsToBackup.add(rel);
+        }
     }
     
     @Override
@@ -225,7 +244,10 @@ class DefaultDevice extends AbstractDevice {
         if (p.isAbsolute()) {
             p = getRoot().relativize(p);
         }
-        return data.pathsToBackup.remove(p);
+        
+        try (CloseableLock l = CloseableLock.write(data.lock)) {
+            return data.pathsToBackup.remove(p);
+        }
     }
     
     @Override
