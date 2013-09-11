@@ -28,4 +28,6 @@ public interface Manager {
     public SortedSet<Date> getBackupDates(UUID id) throws IOException;
     
     public Map<UUID, SortedSet<Date>> getBackupDates() throws IOException;
+    
+    public boolean isConfigured(FileStore store) throws IOException;
 }

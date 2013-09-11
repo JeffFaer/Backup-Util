@@ -58,4 +58,10 @@ public abstract class AbstractManager implements Manager {
         }
         return dates;
     }
+    
+    @Override
+    public boolean isConfigured(FileStore store) throws IOException {
+        Device d = factory.create(store);
+        return getManagedDevices().contains(d.getID());
+    }
 }
