@@ -30,4 +30,6 @@ public interface Manager {
     public Map<UUID, SortedSet<Date>> getBackupDates() throws IOException;
     
     public boolean isConfigured(FileStore store) throws IOException;
+    
+    public DeviceFactory getFactory();
 }

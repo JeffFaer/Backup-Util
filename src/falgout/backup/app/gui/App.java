@@ -19,7 +19,6 @@ import falgout.backup.BackupModule;
 import falgout.backup.FileStoreListener;
 import falgout.backup.FileStorePoller;
 import falgout.backup.app.Device;
-import falgout.backup.app.DeviceFactory;
 import falgout.backup.app.DeviceModule;
 import falgout.backup.app.Manager;
 
@@ -44,12 +43,10 @@ public class App implements FileStoreListener {
     
     private final FileStorePoller poll = new FileStorePoller();
     private final Manager manager;
-    private final DeviceFactory factory;
     
     @Inject
-    public App(Manager manager, DeviceFactory factory) {
+    public App(Manager manager) {
         this.manager = manager;
-        this.factory = factory;
     }
     
     public void start() {
@@ -86,7 +83,7 @@ public class App implements FileStoreListener {
     }
     
     private void configure(FileStore store) throws IOException {
-        Device d = factory.create(store);
+        Device d = manager.getFactory().create(store);
         
     }
     

@@ -16,6 +16,7 @@ public abstract class AbstractManager implements Manager {
         this.factory = factory;
     }
     
+    @Override
     public DeviceFactory getFactory() {
         return factory;
     }
