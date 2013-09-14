@@ -3,6 +3,7 @@ package falgout.backup.app;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.UUID;
 
 /**
@@ -17,7 +18,7 @@ public interface DeviceData {
     
     public Set<Path> getPreviousRoots();
     
-    public Set<Path> getPathsToBackup();
+    public SortedSet<Path> getPathsToBackup();
     
     public Map<Path, Hash> getHashes();
 }

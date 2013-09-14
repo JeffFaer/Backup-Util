@@ -5,7 +5,7 @@ import java.nio.file.FileStore;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedSet;
 
 public interface Device extends DeviceData {
     public FileStore getFileStore();
@@ -13,11 +13,12 @@ public interface Device extends DeviceData {
     public Path getRoot();
     
     /**
-     * Returns the {@link DeviceData#getPathsToBackup() paths to backup} resolved
+     * Returns the {@link DeviceData#getPathsToBackup() paths to backup}
+     * resolved
      * against the {@link #getRoot() root}.
      */
     @Override
-    public Set<Path> getPathsToBackup();
+    public SortedSet<Path> getPathsToBackup();
     
     public boolean addPathToBackup(Path p) throws IOException;
     

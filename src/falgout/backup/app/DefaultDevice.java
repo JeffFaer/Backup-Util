@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -37,7 +38,7 @@ class DefaultDevice extends AbstractDevice {
         
         final boolean wasLoaded;
         final Set<Path> roots = new LinkedHashSet<>();
-        final Set<Path> pathsToBackup = new TreeSet<>();
+        final SortedSet<Path> pathsToBackup = new TreeSet<>();
         final Map<Path, Hash> hashes = new LinkedHashMap<>();
         final ReadWriteLock lock = new ReentrantReadWriteLock();
         
@@ -118,9 +119,9 @@ class DefaultDevice extends AbstractDevice {
         }
         
         @Override
-        public Set<Path> getPathsToBackup() {
+        public SortedSet<Path> getPathsToBackup() {
             try (CloseableLock l = CloseableLock.read(lock)) {
-                return Collections.unmodifiableSet(pathsToBackup);
+                return Collections.unmodifiableSortedSet(pathsToBackup);
             }
         }
         
@@ -166,12 +167,12 @@ class DefaultDevice extends AbstractDevice {
     }
     
     @Override
-    public Set<Path> getPathsToBackup() {
-        Set<Path> ret = new LinkedHashSet<>(data.pathsToBackup.size());
+    public SortedSet<Path> getPathsToBackup() {
+        SortedSet<Path> ret = new TreeSet<>();
         for (Path p : data.pathsToBackup) {
             ret.add(root.resolve(p).normalize());
         }
-        return Collections.unmodifiableSet(ret);
+        return Collections.unmodifiableSortedSet(ret);
     }
     
     @Override
