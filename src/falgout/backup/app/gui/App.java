@@ -23,22 +23,31 @@ import falgout.backup.app.DeviceModule;
 import falgout.backup.app.Manager;
 
 public class App implements FileStoreListener {
+    public static final String DEFAULT_MD = "md5";
+    
     public static void main(String[] args) throws NoSuchAlgorithmException {
-        Map<String, String> props = new LinkedHashMap<>();
-        MessageDigest md;
-        String algo = props.get("md");
-        if (algo == null) {
-            algo = "md5";
-        }
-        try {
-            md = MessageDigest.getInstance(algo);
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println("Could not find message digest algorithm " + algo + ". Reverting to md5.");
-            md = MessageDigest.getInstance("md5");
-        }
+        Map<String, String> props = loadProperties(args);
+        MessageDigest md = getMessageDigest(props);
         
         Injector i = Guice.createInjector(new BackupModule(props), new DeviceModule(md));
         i.getInstance(App.class).start();
+    }
+    
+    public static Map<String, String> loadProperties(String[] args) {
+        return new LinkedHashMap<>();
+    }
+    
+    public static MessageDigest getMessageDigest(Map<String, String> properties) throws NoSuchAlgorithmException {
+        String algo = properties.get("md");
+        if (algo == null) {
+            algo = DEFAULT_MD;
+        }
+        try {
+            return MessageDigest.getInstance(algo);
+        } catch (NoSuchAlgorithmException e) {
+            System.err.printf("Could not find algorihm '%s.' Reverting to '%s.'\n", algo, DEFAULT_MD);
+            return MessageDigest.getInstance(DEFAULT_MD);
+        }
     }
     
     private final FileStorePoller poll = new FileStorePoller();
